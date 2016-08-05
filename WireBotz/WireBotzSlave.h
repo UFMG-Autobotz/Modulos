@@ -1,5 +1,5 @@
-#ifndef _WIREBOTZ_H_
-	#define _WIREBOTZ_H_
+#ifndef WIREBOTZ_SLAVE_H
+	#define WIREBOTZ_SLAVE_H
 
 // A biblioteca WireBotz adiciona funcionalidades a Wire.h
 //
@@ -13,47 +13,18 @@
 //    - Envio e recebimento de menssagens maiores que 32 bytes
 //
 
+//compilation options:
+#ifndef WIREBOTZ_LARGE_MSG
+	#define WIREBOTZ_LARGE_MSG 0
+#endif
+#ifndef WIREBOTZ_ERR_CHECK
+	#define WIREBOTZ_ERR_CHECK 0
+#endif
+
+//
 #include <Arduino.h>
 
-// Library parameters
-#define MASTER_MSG_SIZE 20  //size of message sent by master (bytes)
-#define SLAVE_MSG_SIZE 20   //size of message 
-
-
-class Master
-{
-public:
-	void begin();
-	//	Configura o Arduino como mestre no bus I2C
-
-	int write(byte addr, uint8_t msg[], int size);
-	//	Manda menssagem para um escravo
-	//
-	//Params:
-	//	addr -> endereco do escravo (1 a 127)
-	//	msg  -> buffer com a menssagem a ser enviada
-	//	size -> numero de bytes a serem enviados
-	//
-	//Retorna:
-	//	0  -> sucesso
-	// -1  -> erro
-
-	int read(byte addr, uint8_t msg[], int maxSize);
-	//	Pede para que um escravo envie uma menssagem e armazena
-	//	ela em msg.
-	//
-	//Params:
-	//	addr -> endereco do escravo (1 a 127)
-	//	msg  -> buffer onde a menssagem recebida será colocada
-	//	maxSize -> tamanho do buffer em bytes
-	//	
-	//Retorna:
-	//	numero de bytes lidos, caso a leitura tenha sido bem sucedida
-	//	-1 caso um erro tenha acontecido
-	//
-};
-
-class Slave
+class Slave_t
 {
 public:
 	void begin(byte address);
@@ -108,7 +79,10 @@ private:
 	
 	//callback functions to handle master requests
 	static void  sendData();    //answer master
-	static void  receiveData(int );  //get data from master
+	static void  receiveData(int n);  //get data from master
 };
+
+//declare Slave object
+extern Slave_t Slave;
 
 #endif
