@@ -9,7 +9,6 @@ uint8_t* Slave_t::TXBuffer;
 int      Slave_t::RXSize;   //0 if no buffer registered
 int      Slave_t::TXSize;   //0 if no buffer registered
 
-bool     Slave_t::stayQuiet;    //diz se pode ou nao responder o mestre
 bool     Slave_t::hasNewMessage;  //diz se recebeu uma menssagem nova
 
 // Define member functions
@@ -21,7 +20,6 @@ void Slave_t::begin(byte address)
 	Wire.onReceive(Slave_t::receiveData);     //callBack to receive data from master
 
 	//set private variables to default values
-	Slave_t::stayQuiet = false;
 	Slave_t::hasNewMessage = false;
 
 	Slave_t::TXSize = 0;
@@ -55,11 +53,6 @@ bool Slave_t::newMessage()
 	}
 	else
 		return false;
-}
-
-void Slave_t::quiet(bool q)
-{
-	Slave_t::stayQuiet = q;
 }
 
 void Slave_t::sendData()

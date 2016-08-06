@@ -58,22 +58,12 @@ public:
 	//	chamada a essa funcao, retornando verdadeiro caso
 	//	o mestre tenha enviado uma menssagem.
 
-	void quiet(bool q);
-	//  Ativa ou desativa a resposta ao mestre
-	//	Quando a resposta esta desativada o escravo forcara um
-	//	erro ao inves de mandar uma resposta valida
-	//
-	//Params:
-	//	q -> true: desativa a resposta (stays quiet)
-	//	     false: reativa a resposta
-
 private:
 	static uint8_t*  RXBuffer;
 	static uint8_t*  TXBuffer;
 	static int  RXSize;   //0 if no buffer registered
 	static int  TXSize;   //0 if no buffer registered
 
-	static bool  stayQuiet;    //diz se pode ou nao responder o mestre
 	static bool  hasNewMessage;  //diz se recebeu uma menssagem nova
 
 	
