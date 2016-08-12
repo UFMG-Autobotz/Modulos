@@ -48,6 +48,7 @@
 //	 
 ///////////////////////////////////////////////////////////////////////////////
 
+//É necessário usar os DOIS includes abaixo, na ordem que aparecem:
 #include <Wire.h>
 #include <WireBotzSlave.h>
 
