@@ -1,0 +1,8 @@
+Interrompe	KEYWORD1
+habilita	KEYWORD2
+desabilita	KEYWORD2
+permitirImediatas	KEYWORD2
+modifica	KEYWORD2
+agendar	KEYWORD2
+voidFuncPtr	LITERAL1	# Não é literal, mas fazer o quê, quero azul
+
