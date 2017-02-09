@@ -9,7 +9,11 @@
 #ifndef Interrompe_h
 #define Interrompe_h
 
-#include "Arduino.h"
+#include <MsTimer2.h>
+#include <Arduino.h>
+
+namespace Interrompe
+{
 
 uint8_t conf_borda_sub[3], conf_borda_desc[3];
 uint8_t PORTB_anterior, PORTC_anterior, PORTD_anterior;
@@ -19,7 +23,14 @@ bool limpar_flag = false;
 typedef void (*voidFuncPtr)();
 voidFuncPtr isr_personalizada_B[8], isr_personalizada_C[7], isr_personalizada_D[8];
 
-bool habilitaInt(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
+struct TimerISR
+{
+  long ms;          // Momento (milissegundos) em que a função deverá ser chamada
+  voidFuncPtr isr;  // Callback
+  TimerISR* prox;
+} inicio {0, NULL, NULL};
+
+bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
@@ -65,7 +76,7 @@ bool habilitaInt(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
   return true;
 }
 
-bool desabilitaInt(const uint8_t pino)
+bool desabilita(const uint8_t pino)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
@@ -89,7 +100,7 @@ bool desabilitaInt(const uint8_t pino)
   return true;
 }
 
-bool modificaInt(const uint8_t pino, const uint8_t tipo)
+bool modifica(const uint8_t pino, const uint8_t tipo)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
@@ -107,7 +118,7 @@ bool modificaInt(const uint8_t pino, const uint8_t tipo)
     bitSet(conf_borda_desc[bit_grupo], bit_mascara);
 }
 
-bool modificaInt(const uint8_t pino, voidFuncPtr isr_ptr)
+bool modifica(const uint8_t pino, voidFuncPtr isr_ptr)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
@@ -130,7 +141,7 @@ bool modificaInt(const uint8_t pino, voidFuncPtr isr_ptr)
   }
 }
 
-void permitirInterrupcoesImediatas(bool permitir)
+void permitirImediatas(bool permitir)
 {
   limpar_flag = !permitir;
 }
@@ -191,4 +202,47 @@ ISR(PCINT2_vect)
 
 #undef ISR_PERS
 #undef chamar
-#endif
+
+void timer_isr()
+{
+  long tempo = millis();
+  
+  inicio.prox->isr();
+  MsTimer2::stop();
+
+  TimerISR* seguinte = inicio.prox->prox;
+  delete inicio.prox;
+
+  inicio.prox = seguinte;
+
+  if(seguinte != NULL)
+  {
+    MsTimer2::set(inicio.prox->ms - millis(), timer_isr);
+    MsTimer2::start();
+  }
+}
+
+void agendar(voidFuncPtr isr, long ms)
+{
+  TimerISR *novo = new TimerISR;
+  novo->ms = ms + millis();
+  novo->isr = isr;
+  novo->prox = NULL;
+
+  if(inicio.prox == NULL)
+    inicio.prox = novo;
+
+  TimerISR* i;
+  for(i = &inicio; (i->prox != NULL) && (novo->ms < i->prox->ms); i = i->prox);
+
+  novo->prox = i->prox;
+  i->prox = novo;
+
+  MsTimer2::stop();
+  MsTimer2::set(inicio.prox->ms - millis(), timer_isr);
+  MsTimer2::start();
+}
+
+} // namespace Iterrompe
+
+#endif  // Interrompe_h
