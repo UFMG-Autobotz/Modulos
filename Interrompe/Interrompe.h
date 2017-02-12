@@ -1,6 +1,6 @@
 /* Traz para alto nível as interrupções do processador do ATmega328P
  *  
- * Versão 0.2: Adicionadas interrupçẽos por timer
+ * Versão 0.2: Adicionadas interrupções por timer
  * 
  * Autor: Daniel Leite Ribeiro
  *        Autobotz UFMG
@@ -9,6 +9,8 @@
 #ifndef Interrompe_h
 #define Interrompe_h
   
+#include <Arduino.h>
+
 using voidFuncPtr = void(*)();
 
 namespace Interrompe
@@ -24,6 +26,6 @@ void permitirImediatas(bool permitir);
 
 void agendar(voidFuncPtr isr, unsigned int ms);
 
-} // namespace Iterrompe
+} // namespace Interrompe
 
 #endif  // Interrompe_h

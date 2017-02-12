@@ -1,0 +1,7 @@
+MotorCC	KEYWORD1
+mover	KEYWORD2
+pinagem	KEYWORD2
+tipoParada	KEYWORD2
+soft	LITERAL1
+hard	LITERAL1
+

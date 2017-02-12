@@ -10,18 +10,29 @@
 
 class MotorDePasso
 {
-private:
+  uint8_t i, dir, pinos[4];
+  unsigned int pulso;
 
-  byte pinos[4];
-  int i = 0, j = 0;
+  int ppr, vel, contagem;
+
+  static MotorDePasso *atual;
+  static void meio_passo_1(MotorDePasso*), meio_passo_2(MotorDePasso*);
 
 public:
 
-  int PassosPorRevolucao;
-  int Velocidade;
+  MotorDePasso();
+  MotorDePasso(int p1, int p2, int p3, int p4);
+  MotorDePasso(int p1, int p2, int p3, int p4, int passos);
+  
+  void pinagem(int p1, int p2, int p3, int p4);
+  
+  int passosPorRevolucao();
+  int velocidade();
 
-  void Pinagem(int p1, int p2, int p3, int p4);
-  void Passo(int dir);
+  void passosPorRevolucao(int passos);
+  void velocidade(int veolcidade);
+
+  void passos(int num);  // Gira "num" passos para frente (se positivo) ou para trás (se negativo)
 };
 
 #endif

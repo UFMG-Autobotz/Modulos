@@ -10,14 +10,20 @@
 
 class MotorCC
 {
-private:
-	
-  byte enable, H1, H2;
-  
 public:
 
-  void Pinagem(int enable, int H1, int H2);
-  void Mover(int vel_pwm);
+  enum Parada {soft, hard};
+
+  void pinagem(int enable, int H1, int H2);
+  void mover(int vel_pwm);
+  void mover(int vel_pwm, unsigned long duracao);
+  void tipoParada(Parada tipo);
+
+private:
+  
+  uint8_t enable, H1, H2;
+  Parada tipo_parada;
 };
 
 #endif
+

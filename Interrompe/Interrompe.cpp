@@ -1,19 +1,18 @@
 /* Traz para alto nível as interrupções do processador do ATmega328P
  *  
- * Versão 0.2: Adicionadas interrupçẽos por timer
+ * Versão 0.2: Adicionadas interrupções por timer
  * 
  * Autor: Daniel Leite Ribeiro
  *        Autobotz UFMG
  */
 
-#include <MsTimer2.h>
 #include <Arduino.h>
 #include "Interrompe.h"
 
 namespace Interrompe
 {
 
-uint8_t conf_borda_sub[3], conf_borda_desc[3];
+uint8_t borda_sub[3], borda_desc[3];
 uint8_t PORTB_anterior, PORTC_anterior, PORTD_anterior;
 
 bool limpar_flag = false;
@@ -25,7 +24,7 @@ struct TimerISR
   unsigned int ms;  // Momento (milissegundos) em que a função deverá ser chamada
   voidFuncPtr isr;  // Callback
   TimerISR* prox;
-} inicio {0, NULL, NULL};
+} inicio;           // Inicializado com {0, NULL, NULL}
 
 bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
 {
@@ -62,10 +61,10 @@ bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
     bitSet(PCIFR, bit_grupo);
   
   if(tipo == RISING || tipo == CHANGE)
-    bitSet(conf_borda_sub[bit_grupo], bit_mascara);
+    bitSet(borda_sub[bit_grupo], bit_mascara);
 
   if(tipo == FALLING || tipo == CHANGE)
-    bitSet(conf_borda_desc[bit_grupo], bit_mascara);
+    bitSet(borda_desc[bit_grupo], bit_mascara);
   
   bitSet(PCICR, bit_grupo);   // Habilita o grupo de pinos (são três)
   bitSet(*digitalPinToPCMSK(pino), bit_mascara);  // Habilita o pino dentro do grupo
@@ -87,8 +86,8 @@ bool desabilita(const uint8_t pino)
   uint8_t bit_grupo = digitalPinToPCICRbit(pino);
   uint8_t bit_mascara = digitalPinToPCMSKbit(pino);
 
-  bitClear(conf_borda_sub[bit_grupo], bit_mascara);
-  bitClear(conf_borda_desc[bit_grupo], bit_mascara);
+  bitClear(borda_sub[bit_grupo], bit_mascara);
+  bitClear(borda_desc[bit_grupo], bit_mascara);
   bitClear(*digitalPinToPCMSK(pino), bit_mascara);  // Desabilita o pino dentro do grupo
 
   if(*digitalPinToPCMSK(pino) == 0) // Se não tiver sobrado nenhum pino nesse grupo,
@@ -105,14 +104,14 @@ bool modifica(const uint8_t pino, const uint8_t tipo)
   uint8_t bit_grupo = digitalPinToPCICRbit(pino);
   uint8_t bit_mascara = digitalPinToPCMSKbit(pino);
 
-  bitClear(conf_borda_sub[bit_grupo], bit_mascara);
-  bitClear(conf_borda_desc[bit_grupo], bit_mascara);
+  bitClear(borda_sub[bit_grupo], bit_mascara);
+  bitClear(borda_desc[bit_grupo], bit_mascara);
 
   if(tipo == RISING || tipo == CHANGE)
-    bitSet(conf_borda_sub[bit_grupo], bit_mascara);
+    bitSet(borda_sub[bit_grupo], bit_mascara);
 
   if(tipo == FALLING || tipo == CHANGE)
-    bitSet(conf_borda_desc[bit_grupo], bit_mascara);
+    bitSet(borda_desc[bit_grupo], bit_mascara);
 }
 
 bool modifica(const uint8_t pino, voidFuncPtr isr_ptr)
@@ -148,7 +147,7 @@ void permitirImediatas(bool permitir)
 
 ISR(PCINT0_vect)
 {
-  uint8_t validos = (PORTB & ~PORTB_anterior & conf_borda_sub[0]) | (~PORTB & PORTB_anterior & conf_borda_desc[0]);
+  uint8_t validos = (PORTB & ~PORTB_anterior & borda_sub[0]) | (~PORTB & PORTB_anterior & borda_desc[0]);
   
   exec_isr(0x01,0);
   exec_isr(0x02,1);
@@ -166,7 +165,7 @@ ISR(PCINT0_vect)
 
 ISR(PCINT1_vect)
 {
-  uint8_t validos = (PORTC & ~PORTC_anterior & conf_borda_sub[1]) | (~PORTC & PORTC_anterior & conf_borda_desc[1]);
+  uint8_t validos = (PORTC & ~PORTC_anterior & borda_sub[1]) | (~PORTC & PORTC_anterior & borda_desc[1]);
 
   exec_isr(0x01,0);
   exec_isr(0x02,1);
@@ -183,7 +182,7 @@ ISR(PCINT1_vect)
 
 ISR(PCINT2_vect)
 {
-  uint8_t validos = (PORTD & ~PORTD_anterior & conf_borda_sub[2]) | (~PORTD & PORTD_anterior & conf_borda_desc[2]);
+  uint8_t validos = (PORTD & ~PORTD_anterior & borda_sub[2]) | (~PORTD & PORTD_anterior & borda_desc[2]);
   
   exec_isr(0x01,0);
   exec_isr(0x02,1);
@@ -200,41 +199,4 @@ ISR(PCINT2_vect)
 #undef ISR_PERS
 #undef exec_isr
 
-void timer_isr()
-{
-  unsigned int tempo = millis();
-  
-  MsTimer2::stop();
-  inicio.prox->isr();
-
-  TimerISR* seguinte = inicio.prox->prox;
-  delete inicio.prox;
-
-  inicio.prox = seguinte;
-
-  if(seguinte != NULL)
-  {
-    MsTimer2::set(inicio.prox->ms - tempo, timer_isr);
-    MsTimer2::start();
-  }
-}
-
-void agendar(voidFuncPtr isr, unsigned int ms)
-{
-  TimerISR *novo = new TimerISR;
-  novo->ms = ms + millis();
-  novo->isr = isr;
-  novo->prox = NULL;
-
-  TimerISR* i;
-  for(i = &inicio; (i->prox != NULL) && (novo->ms < i->prox->ms); i = i->prox);
-
-  novo->prox = i->prox;
-  i->prox = novo;
-
-  MsTimer2::stop();
-  MsTimer2::set(inicio.prox->ms - millis(), timer_isr);
-  MsTimer2::start();
-}
-
-} // namespace Iterrompe
+} // namespace Interrompe

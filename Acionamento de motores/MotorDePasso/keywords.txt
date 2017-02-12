@@ -1,0 +1,6 @@
+MotorDePasso	KEYWORD1
+passos	KEYWORD2
+pinagem	KEYWORD2
+passosPorRevolucao	KEYWORD2
+velocidade	KEYWORD2
+
