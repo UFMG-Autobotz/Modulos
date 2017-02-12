@@ -13,14 +13,6 @@
 //    - Envio e recebimento de menssagens maiores que 32 bytes
 //
 
-//compilation options:
-#ifndef WIREBOTZ_LARGE_MSG
-	#define WIREBOTZ_LARGE_MSG 0
-#endif
-#ifndef WIREBOTZ_ERR_CHECK
-	#define WIREBOTZ_ERR_CHECK 0
-#endif
-
 //
 #include <Arduino.h>
 
