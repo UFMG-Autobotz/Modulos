@@ -24,6 +24,9 @@ void Slave_t::begin(byte address)
 
 	Slave_t::TXSize = 0;
 	Slave_t::RXSize = 0;
+
+    Slave_t::TXCnt = 0;
+    Slave_t::RXCnt = 0;
 }
 
 void Slave_t::setTXBuffer(uint8_t buffPtr[], int size)
@@ -58,6 +61,8 @@ bool Slave_t::newMessage()
 void Slave_t::sendData()
 {
 	Wire.write(Slave_t::TXBuffer, Slave_t::TXSize);
+
+    Slave_t::TXCnt += 1;
 }
 
 void Slave_t::receiveData(int n)
@@ -67,7 +72,11 @@ void Slave_t::receiveData(int n)
     	Slave_t::RXBuffer[i] = Wire.read();
 	
 	Slave_t::hasNewMessage = true;
+    Slave_t::RXCnt += 1;
 }
+
+uint16_t getRXCnt() { return Slave_t::RXCnt; }
+uint16_t getTXCnt() { return Slave_t::TXCnt; }
 
 // Instatiate Slave object using the default (empty) constructor
 Slave_t Slave = Slave_t();

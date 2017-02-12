@@ -13,14 +13,6 @@
 //    - Envio e recebimento de menssagens maiores que 32 bytes
 //
 
-//compilation options:
-#ifndef WIREBOTZ_LARGE_MSG
-	#define WIREBOTZ_LARGE_MSG 0
-#endif
-#ifndef WIREBOTZ_ERR_CHECK
-	#define WIREBOTZ_ERR_CHECK 0
-#endif
-
 //
 #include <Arduino.h>
 
@@ -58,6 +50,12 @@ public:
 	//	chamada a essa funcao, retornando verdadeiro caso
 	//	o mestre tenha enviado uma menssagem.
 
+    uint16_t getRXCnt();
+    // Retorna o numero de vezes que o escravo recebeu mensagens
+
+    uint16_t getTXCnt();
+    // Retorna o numero de vezes que o escravo enviou mensagens
+
 private:
 	static uint8_t*  RXBuffer;
 	static uint8_t*  TXBuffer;
@@ -66,7 +64,10 @@ private:
 
 	static bool  hasNewMessage;  //diz se recebeu uma menssagem nova
 
-	
+    //count number of TXs and RXs
+    static uint16_t RXCnt;
+    static uint16_t TXCnt;
+
 	//callback functions to handle master requests
 	static void  sendData();    //answer master
 	static void  receiveData(int n);  //get data from master
