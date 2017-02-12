@@ -8,6 +8,8 @@ uint8_t* Slave_t::RXBuffer;
 uint8_t* Slave_t::TXBuffer;
 int      Slave_t::RXSize;   //0 if no buffer registered
 int      Slave_t::TXSize;   //0 if no buffer registered
+uint16_t Slave_t::RXCnt;
+uint16_t Slave_t::TXCnt;
 
 bool     Slave_t::hasNewMessage;  //diz se recebeu uma menssagem nova
 
@@ -25,8 +27,8 @@ void Slave_t::begin(byte address)
 	Slave_t::TXSize = 0;
 	Slave_t::RXSize = 0;
 
-    Slave_t::TXCnt = 0;
-    Slave_t::RXCnt = 0;
+  Slave_t::TXCnt = 0;
+  Slave_t::RXCnt = 0;
 }
 
 void Slave_t::setTXBuffer(uint8_t buffPtr[], int size)
@@ -67,16 +69,16 @@ void Slave_t::sendData()
 
 void Slave_t::receiveData(int n)
 {
-  	//copy message from arduino to library buffer
-  	for(int i = 0; Wire.available() && i<Slave_t::RXSize; i++)
-    	Slave_t::RXBuffer[i] = Wire.read();
+	//copy message from arduino to library buffer
+	for(int i = 0; Wire.available() && i<Slave_t::RXSize; i++)
+  	Slave_t::RXBuffer[i] = Wire.read();
 	
 	Slave_t::hasNewMessage = true;
-    Slave_t::RXCnt += 1;
+  Slave_t::RXCnt += 1;
 }
 
-uint16_t getRXCnt() { return Slave_t::RXCnt; }
-uint16_t getTXCnt() { return Slave_t::TXCnt; }
+uint16_t Slave_t::getRXCnt() { return RXCnt; }
+uint16_t Slave_t::getTXCnt() { return TXCnt; }
 
 // Instatiate Slave object using the default (empty) constructor
 Slave_t Slave = Slave_t();

@@ -1,0 +1,7 @@
+Master	KEYWORD1
+Slave	KEYWORD1
+setRXBuffer	KEYWORD2
+setTXBuffer	KEYWORD2
+newMessage	KEYWORD2
+getRXCnt	KEYWORD2
+getTXCnt	KEYWORD2
