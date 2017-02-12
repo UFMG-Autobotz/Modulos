@@ -6,7 +6,8 @@
 #ifndef MotorDePasso_h
 #define MotorDePasso_h
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include <TimerScheduler.h>
 
 class MotorDePasso
 {
@@ -33,6 +34,7 @@ public:
   void velocidade(int veolcidade);
 
   void passos(int num);  // Gira "num" passos para frente (se positivo) ou para trás (se negativo)
+  int passoAtual();
 };
 
 #endif

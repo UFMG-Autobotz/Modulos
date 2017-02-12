@@ -14,6 +14,9 @@ public:
 
   enum Parada {soft, hard};
 
+  MotorCC();
+  MotorCC(int enable, int H1, int H2);
+
   void pinagem(int enable, int H1, int H2);
   void mover(int vel_pwm);
   void mover(int vel_pwm, unsigned long duracao);

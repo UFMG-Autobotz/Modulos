@@ -6,3 +6,7 @@ modifica	KEYWORD2
 agendar	KEYWORD2
 voidFuncPtr	LITERAL1	# Não é literal, mas fazer o quê, quero azul
 
+TimerScheduler	KEYWORD1
+setupTaskScheduler	KEYWORD2
+scheduleTimer1Task	KEYWORD2
+startSchedulerTicking	KEYWORD2

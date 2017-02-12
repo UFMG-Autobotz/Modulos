@@ -4,9 +4,15 @@
  */
 
 #include "MotorCC.h"
-#include "TimerScheduler.h"
 
 static void pararMotor(MotorCC* mot);
+
+MotorCC::MotorCC(){}
+
+MotorCC::MotorCC(int enable, int H1, int H2)
+{
+  pinagem(enable, H1, H2);
+}
 
 void MotorCC::pinagem(int pino_enable, int pino_H1, int pino_H2)
 {
@@ -18,11 +24,9 @@ void MotorCC::pinagem(int pino_enable, int pino_H1, int pino_H2)
    pinMode(H1,OUTPUT);
    pinMode(H2,OUTPUT);
 
-   if(tickIntervalMs == 0)
-  {
-    setupTaskScheduler(4, 150);
-    startSchedulerTicking();
-  }
+   setupTaskScheduler(4, 150);
+   startSchedulerTicking();
+
 }
 
 void MotorCC::mover(int vel_pwm)

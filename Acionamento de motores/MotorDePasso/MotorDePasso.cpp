@@ -7,7 +7,6 @@
  */
 
 #include "MotorDePasso.h"
-#include "TimerScheduler.h"
 
 MotorDePasso::MotorDePasso(){}
 
@@ -34,11 +33,9 @@ void MotorDePasso::pinagem(int p1, int p2, int p3, int p4)
   pinMode(pinos[2],OUTPUT);
   pinMode(pinos[3],OUTPUT);
 
-  if(tickIntervalMs == 0)
-  {
-    setupTaskScheduler(4, 150);
-    startSchedulerTicking();
-  }
+
+  setupTaskScheduler(4, 150);
+  startSchedulerTicking();
 }
 
 void MotorDePasso::passos(int num_passos)
@@ -56,6 +53,11 @@ void MotorDePasso::passos(int num_passos)
     digitalWrite(pinos[2],LOW);
     digitalWrite(pinos[3],LOW);
   }
+}
+
+int MotorDePasso::passoAtual()
+{
+  return i % ppr;
 }
 
 void MotorDePasso::passosPorRevolucao(int PPR)
