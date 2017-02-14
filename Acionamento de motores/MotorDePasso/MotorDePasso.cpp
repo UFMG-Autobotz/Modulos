@@ -8,17 +8,12 @@
 
 #include "MotorDePasso.h"
 
-MotorDePasso::MotorDePasso(){}
+MotorDePasso::MotorDePasso() : vel(0), ppr(48), task_id(-1) {}
 
-MotorDePasso::MotorDePasso(int p1, int p2, int p3, int p4)
+MotorDePasso::MotorDePasso(int p1, int p2, int p3, int p4, int PPR = 48) : MotorDePasso()
 {
   pinagem(p1,p2,p3,p4);
-}
-
-MotorDePasso::MotorDePasso(int p1, int p2, int p3, int p4, int passos)
-{
-  pinagem(p1,p2,p3,p4);
-  ppr = passos;
+  ppr = PPR;
 }
 
 void MotorDePasso::pinagem(int p1, int p2, int p3, int p4)
@@ -33,13 +28,17 @@ void MotorDePasso::pinagem(int p1, int p2, int p3, int p4)
   pinMode(pinos[2],OUTPUT);
   pinMode(pinos[3],OUTPUT);
 
-
-  setupTaskScheduler(4, 150);
+  setupTaskScheduler(4, 2);
   startSchedulerTicking();
 }
 
 void MotorDePasso::passos(int num_passos)
 {
+  unscheduleTimer1Task(task_id);
+  
+  if(vel == 0)
+    return;
+  
   pulso = 30000/(vel*ppr);
   contagem = abs(num_passos);
   dir = (num_passos == 0) ? 0 : (num_passos > 0) ? 1 : -1;
@@ -47,12 +46,7 @@ void MotorDePasso::passos(int num_passos)
   if(dir)
     meio_passo_1(this);
   else
-  {
-    digitalWrite(pinos[0],LOW);
-    digitalWrite(pinos[1],LOW);
-    digitalWrite(pinos[2],LOW);
-    digitalWrite(pinos[3],LOW);
-  }
+    soltar();
 }
 
 int MotorDePasso::passoAtual()
@@ -71,15 +65,24 @@ int MotorDePasso::passosPorRevolucao()
   return ppr;
 }
 
-void MotorDePasso::velocidade(int veloc)
+void MotorDePasso::velocidade(float veloc)
 {
-  if(veloc > 0)
-    vel = veloc;
+  vel = max(0,veloc);
 }
 
-int MotorDePasso::velocidade()
+float MotorDePasso::velocidade()
 {
   return vel;
+}
+
+void MotorDePasso::soltar()
+{  
+  digitalWrite(pinos[0],LOW);
+  digitalWrite(pinos[1],LOW);
+  digitalWrite(pinos[2],LOW);
+  digitalWrite(pinos[3],LOW);
+
+  task_id = -1;
 }
 
 void MotorDePasso::meio_passo_2(MotorDePasso* mot)
@@ -87,21 +90,15 @@ void MotorDePasso::meio_passo_2(MotorDePasso* mot)
   digitalWrite(mot->pinos[mot->i % 4], LOW);
   (mot->dir == 1) ? ++mot->i : --mot->i;
   
-  if(--mot->contagem)
-    scheduleTimer1Task(meio_passo_1, mot, mot->pulso);
+  if(--mot->contagem > 0)
+    mot->task_id = scheduleTimer1Task(meio_passo_1, mot, mot->pulso);
   else
-  {
-    digitalWrite(mot->pinos[0],LOW);
-    digitalWrite(mot->pinos[1],LOW);
-    digitalWrite(mot->pinos[2],LOW);
-    digitalWrite(mot->pinos[3],LOW);
-  }
+    mot->soltar();
 }
 
 void MotorDePasso::meio_passo_1(MotorDePasso* mot)
 {
   digitalWrite(mot->pinos[((mot->dir == 1) ? (mot->i+1) : (mot->i-1)) % 4], HIGH);
 
-  scheduleTimer1Task(meio_passo_2, mot, mot->pulso);
+  mot->task_id = scheduleTimer1Task(meio_passo_2, mot, mot->pulso);
 }
-

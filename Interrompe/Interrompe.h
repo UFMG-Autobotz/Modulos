@@ -11,20 +11,19 @@
   
 #include <Arduino.h>
 
-using voidFuncPtr = void(*)();
 
 namespace Interrompe
 {
   
-bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo);
+using voidFuncPtr = void(*)(void*);
+
+bool habilita(const uint8_t pino, const byte tipo, voidFuncPtr isr_ptr, void* arg = NULL);
 bool desabilita(const uint8_t pino);
 
 bool modifica(const uint8_t pino, const uint8_t tipo);
 bool modifica(const uint8_t pino, voidFuncPtr isr_ptr);
 
 void permitirImediatas(bool permitir);
-
-void agendar(voidFuncPtr isr, unsigned int ms);
 
 } // namespace Interrompe
 

@@ -24,7 +24,7 @@ public:
 
 private:
   
-  uint8_t enable, H1, H2;
+  uint8_t enable, H1, H2, task_id;
   Parada tipo_parada;
 };
 

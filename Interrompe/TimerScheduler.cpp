@@ -15,6 +15,8 @@
  * for the timer setup code.
  */
 
+// Com umas pequeninas alterações feitas pelo Daniel :)
+
 #include <Arduino.h>
 
 const int prescaler = 1024; // How many clock cycles it takes before the underlying timer (Timer1) increments
@@ -69,6 +71,10 @@ void setupTaskScheduler(int _maxTasks, unsigned long _tickIntervalMs)
   compareMatchRegister = timerHertz / interruptHertz; // compareMatchRegister = when the underlying timer (Timer1) hits this value, it interrupts and then resets to zero
 }
 
+/* 
+ * OBS: alterei a função a seguir para retornar a posição alocada no vetor (i) ou em vez de 'true' e -1 em vez de 'false'
+ */
+
 int scheduleTimer1Task(void (*action)(void*), void* argument, unsigned long delayMs)
 {
   // Look for an empty spot in the task array and put the new task there
@@ -81,11 +87,11 @@ int scheduleTimer1Task(void (*action)(void*), void* argument, unsigned long dela
       ptr->argument = argument;
       ptr->delayTicks = delayMs / tickIntervalMs;
       tasks[i] = ptr;
-      return true; // Found an empty spot in the task list for this task
+      return i; // Found an empty spot in the task list for this task
     }
   }
 
-  return false; // No spot for this task found, scheduling request rejected
+  return -1; // No spot for this task found, scheduling request rejected
 }
 
 // Thanks to amandaghassaei @ http://www.instructables.com/id/Arduino-Timer-Interrupts/step2/Structuring-Timer-Interrupts/ for the code in this function
@@ -134,3 +140,21 @@ ISR( TIMER1_COMPA_vect )
     } 
   }
 }
+
+// ____________________________________________________________________________________________
+// Adicionei as funções a seguir:
+
+void stopSchedulerTicking()
+{
+  TIMSK1 &= !(1 << OCIE1A);
+}
+
+void unscheduleTimer1Task(int task_id)
+{
+  if(task_id >= maxTasks || tasks[task_id] == NULL)
+    return;
+  
+  free(tasks[task_id]);
+  tasks[task_id] = NULL;
+}
+

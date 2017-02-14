@@ -19,6 +19,8 @@ bool limpar_flag = false;
 
 voidFuncPtr isr_personalizada_B[8], isr_personalizada_C[7], isr_personalizada_D[8];
 
+void *arg_B[8], *arg_C[7], *arg_D[8];
+
 struct TimerISR
 {
   unsigned int ms;  // Momento (milissegundos) em que a função deverá ser chamada
@@ -26,20 +28,11 @@ struct TimerISR
   TimerISR* prox;
 } inicio;           // Inicializado com {0, NULL, NULL}
 
-bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
+bool habilita(const uint8_t pino, const byte tipo, voidFuncPtr isr_ptr, void* arg = NULL)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
   
- if(digitalPinToInterrupt(pino) != NOT_AN_INTERRUPT)    // O ATmega328P possui registradores de interrupção separados para os pinos PD2 e
-  {                                                     // PD3, que apresentam ISRs próprias e têm prioridade em relação aos outros pinos
-    if(limpar_flag)
-      bitSet(EIFR, digitalPinToInterrupt(pino));
-      
-    attachInterrupt(digitalPinToInterrupt(pino), isr_ptr, tipo);    // Para esses pinos já existe função de alto nível
-    return true;
-  }
-
   uint8_t bit_grupo = digitalPinToPCICRbit(pino);
   uint8_t bit_mascara = digitalPinToPCMSKbit(pino);
 
@@ -47,14 +40,17 @@ bool habilita(const uint8_t pino, voidFuncPtr isr_ptr, const byte tipo)
   {
   case 0:
     isr_personalizada_B[bit_mascara] = isr_ptr;
+    arg_B[bit_mascara] = arg;
     break;
 
   case 1:
     isr_personalizada_C[bit_mascara] = isr_ptr;
+    arg_C[bit_mascara] = arg;
     break;
 
   case 2:
     isr_personalizada_D[bit_mascara] = isr_ptr;
+    arg_D[bit_mascara] = arg;
   }
   
   if(limpar_flag)
@@ -76,12 +72,6 @@ bool desabilita(const uint8_t pino)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
-  
- if(digitalPinToInterrupt(pino) != NOT_AN_INTERRUPT)
-  {
-    detachInterrupt(digitalPinToInterrupt(pino));
-    return true;
-  }
 
   uint8_t bit_grupo = digitalPinToPCICRbit(pino);
   uint8_t bit_mascara = digitalPinToPCMSKbit(pino);
@@ -142,8 +132,8 @@ void permitirImediatas(bool permitir)
   limpar_flag = !permitir;
 }
 
-#define exec_isr(qual_bit,qual_isr) if(validos & qual_bit) ISR_PERS[qual_isr]()
-#define ISR_PERS isr_personalizada_B
+#define EXEC_ISR_(qual_bit,qual_isr,qual_grupo) if(validos & qual_bit) isr_personalizada_ ## qual_grupo[qual_isr](arg_ ## qual_grupo[qual_isr])
+#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,B)
 
 ISR(PCINT0_vect)
 {
@@ -161,7 +151,7 @@ ISR(PCINT0_vect)
   PORTB_anterior = PORTB;
 }
 
-#define ISR_PERS isr_personalizada_C
+#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,C)
 
 ISR(PCINT1_vect)
 {
@@ -178,7 +168,7 @@ ISR(PCINT1_vect)
   PORTC_anterior = PORTC;
 }
 
-#define ISR_PERS isr_personalizada_D
+#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,D)
 
 ISR(PCINT2_vect)
 {
@@ -186,8 +176,8 @@ ISR(PCINT2_vect)
   
   exec_isr(0x01,0);
   exec_isr(0x02,1);
-//exec_isr(0x04,2); // PD2 e PD3 têm suas próprias ISR
-//exec_isr(0x08,3);
+  exec_isr(0x04,2);
+  exec_isr(0x08,3);
   exec_isr(0x10,4);
   exec_isr(0x20,5);
   exec_isr(0x40,6);

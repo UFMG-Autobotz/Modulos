@@ -15,11 +15,17 @@
  * for the timer setup code.
  */
 
+// Com umas pequeninas alterações feitas pelo Daniel :)
+
 #ifndef TimerScheduler_h
 #define TimerScheduler_h
 
 void setupTaskScheduler(int _maxTasks, unsigned long _tickIntervalMs);
 int scheduleTimer1Task(void (*action)(void*), void* argument, unsigned long delayMs);
 void startSchedulerTicking();
+
+// Adicionei estas funções:
+void stopSchedulerTicking(); // Para poder parar as interrupções quando necessário
+void unscheduleTimer1Task(int task_id); // Para poder cancelar uma tarefa que foi agendada
 
 #endif

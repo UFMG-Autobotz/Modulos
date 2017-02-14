@@ -4,12 +4,13 @@
  */
 
 #include "MotorCC.h"
+#include <TimerScheduler.h>
 
 static void pararMotor(MotorCC* mot);
 
-MotorCC::MotorCC(){}
+MotorCC::MotorCC() : task_id(-1) {}
 
-MotorCC::MotorCC(int enable, int H1, int H2)
+MotorCC::MotorCC(int enable, int H1, int H2) : task_id(-1) 
 {
   pinagem(enable, H1, H2);
 }
@@ -26,7 +27,6 @@ void MotorCC::pinagem(int pino_enable, int pino_H1, int pino_H2)
 
    setupTaskScheduler(4, 150);
    startSchedulerTicking();
-
 }
 
 void MotorCC::mover(int vel_pwm)
@@ -48,13 +48,17 @@ void MotorCC::mover(int vel_pwm)
       digitalWrite(enable,tipo_parada);
       digitalWrite(H1,LOW);
       digitalWrite(H2,LOW);
+
+      task_id = -1;
    }
+  
+   unscheduleTimer1Task(task_id); 
 }
 
 void MotorCC::mover(int vel_pwm, unsigned long duracao)
 {
    mover(vel_pwm);
-   scheduleTimer1Task(pararMotor, this, duracao);
+   task_id = scheduleTimer1Task(pararMotor, this, duracao);
 }
 
 void MotorCC::tipoParada(Parada tipo)
@@ -64,5 +68,5 @@ void MotorCC::tipoParada(Parada tipo)
 
 static void pararMotor(MotorCC* mot)
 {
-  mot->mover(0);
+   mot->mover(0);
 }
