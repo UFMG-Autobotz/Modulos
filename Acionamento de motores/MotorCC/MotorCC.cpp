@@ -8,9 +8,9 @@
 
 static void pararMotor(MotorCC* mot);
 
-MotorCC::MotorCC() : task_id(-1) {}
+MotorCC::MotorCC() : task_id(-1), tipo_parada(soft) {}
 
-MotorCC::MotorCC(int enable, int H1, int H2) : task_id(-1) 
+MotorCC::MotorCC(int enable, int H1, int H2) : MotorCC()
 {
   pinagem(enable, H1, H2);
 }

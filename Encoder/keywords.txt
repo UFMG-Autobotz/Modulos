@@ -1,0 +1,9 @@
+Encoder	KEYWORD1
+config	KEYWORD2
+freqCorte	KEYWORD2
+posicao	KEYWORD2
+velocidade	KEYWORD2
+aceleracao	KEYWORD2
+incrementando	KEYWORD2
+decrementando	KEYWORD2
+
