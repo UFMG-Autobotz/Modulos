@@ -1,0 +1,30 @@
+Radio	KEYWORD1
+Node	KEYWORD1
+Talker	KEYWORD1
+Listener	KEYWORD1
+Bilateral	KEYWORD1
+Master	KEYWORD1
+Slave	KEYWORD1
+Server	KEYWORD1
+Client	KEYWORD1
+
+connected	KEYWORD2
+addBuffer	KEYWORD2
+addRxBuffer	KEYWORD2
+addTxBuffer	KEYWORD2
+addService	KEYWORD2
+numBuffers	KEYWORD2
+numRxBuffers	KEYWORD2
+numTxBuffers	KEYWORD2
+numServices	KEYWORD2
+newMessage	KEYWORD2
+rxCount	KEYWORD2
+txCount	KEYWORD2
+send	KEYWORD2
+read	KEYWORD2
+request	KEYWORD2
+
+buffers	KEYWORD3
+rx_buffers	KEYWORD3
+tx_buffers	KEYWORD3
+services	KEYWORD3
