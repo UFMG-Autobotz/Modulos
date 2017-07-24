@@ -25,7 +25,7 @@ void spin();
 // ----------------------------------------------------------------------------------
 
 // Tipo do ponteiro para as funções usadas como serviço pelo Server
-using ReqResp = void(*)(uint8_t*,uint8_t*);
+using srv_t = void(*)(uint8_t*,uint8_t*);
 
 // Classe abstrata da qual todas as outras derivam.
 // Representa um dispositivo de radio com um qual este Arduino se comunica
@@ -311,7 +311,7 @@ public:
 
   // Adiciona uma função do tipo 'void(uint8_t* req, uint8_t* resp)' que processa a
   // mensagem 'req' e armazena a resposta em 'resp'. Retorna o ID sequencial do serviço
-  int addService(ReqResp srv);
+  int addService(srv_t srv);
 
   // Retorna a quantidade de serviços adicionados
   int numServices() { return qtde_srv; }
@@ -320,7 +320,7 @@ public:
   int txCount() { return tx_cnt; }
 
   // Vetor com os serviços adiconados
-  ReqResp* services;
+  srv_t* services;
 
 private:
   void lerMsg();

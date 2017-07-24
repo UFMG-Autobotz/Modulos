@@ -14,7 +14,16 @@
 namespace Radio
 {
 
-enum : uint8_t
+static Radio* talker_vec[5];         // Ponteiros para os cinco rádios que comunicam com este Arduino
+static Radio* last_sent;             // Ponteiro para o último rádio prara o qual se enviou mensagem
+static bool podeEnviar();            // Verifica se não há outro rádio enviando
+static uint8_t irqPin = 2;           // Pino de interrupção
+static uint8_t EN_RX_atual;          // Valor atual do registrador que habilita os pipes
+static byte this_addr[5];            // Endereço deste rádio
+static int listener_cnt, talker_cnt; // Quantidade de talkers e de listeners
+static uint32_t talker_addr_vec[5], *listener_addr_vec = new uint32_t[0]; // Vetores com os endereços dos talkers e listeners
+
+enum : uint8_t  // Bytes de controle
 {
   PIPENUM_REQUEST         = '&',
   PIPENUM_RESPONSE        = '*',
@@ -29,17 +38,9 @@ enum : uint8_t
   SERVER_RESPONSE_INVALID = '<'
 };
 
-static Radio *rx[5], *last_sent;
-static bool podeEnviar();
-static uint8_t irqPin = 2, EN_RX_atual;
-static byte this_addr[5];
-static uint32_t talker_vec[5], *listener_vec = new uint32_t[0];
-static int listener_cnt, talker_cnt;
-
 void config(const uint8_t* addr)
 {
-  for(int i = 0; i < 4; ++i)
-    this_addr[i] = addr[i];
+  *(uint32_t*) this_addr = *(uint32_t*) addr;
 
   Mirf.spi = &MirfHardwareSpi;
   Mirf.init();
@@ -48,10 +49,10 @@ void config(const uint8_t* addr)
   for(int i = 5; i >= 0; --i)
   {
     this_addr[4] = i;
-    Mirf.writeRegister(RX_ADDR_P0 + i, this_addr, mirf_ADDR_LEN); 
+    Mirf.writeRegister(RX_ADDR_P0 + i, this_addr, mirf_ADDR_LEN);
   }
   
-  Mirf.configRegister(EN_RXADDR, EN_RX_atual = '\1');
+  Mirf.configRegister(EN_RXADDR, EN_RX_atual = bit(0));
   Mirf.ceHi();
   
   Mirf.payload = mirf_ADDR_LEN;
@@ -71,7 +72,7 @@ void pinout(int ce, int csn, int irq = -1)
 bool podeEnviar()
 {
   uint8_t cd_val;
-  Mirf.readRegister(CD,&cd_val,1); // Carrier detect (1 se há outro radio enviando)
+  Mirf.readRegister(CD,&cd_val,1);
   
   return !cd_val;
 }
@@ -83,7 +84,7 @@ void spin()
   while(status & bit(RX_DR) || (status & 0b1110) != 0b1110)
   {
     if(int pipe = status & 0b1110 >> 1)
-      rx[pipe-1]->lerMsg();
+      talker_vec[pipe-1]->lerMsg();
     else
       Radio::cmd();
 
@@ -113,10 +114,10 @@ void spin()
   }
 }
 
-/* -------------------- NODE -------------------- */
+/* -------------------- RADIO -------------------- */
 
 Radio::Radio(byte* address, unsigned int payload, bool listener) :
-  payload (max(payload,31)),
+  payload (min(payload,31)),
   rx_cnt(0),
   tx_cnt(0),
   ok(false)
@@ -127,15 +128,15 @@ Radio::Radio(byte* address, unsigned int payload, bool listener) :
   uint32_t* new_vec = new uint32_t[listener_cnt+1];
 
   for(int i = 0; i < listener_cnt; ++i)
-    new_vec[i] = listener_vec[i];
+    new_vec[i] = listener_addr_vec[i];
 
   new_vec[listener_cnt++] = *(uint32_t*) addr;
   
-  delete[] listener_vec;
-  listener_vec = new_vec;
+  delete[] listener_addr_vec;
+  listener_addr_vec = new_vec;
   
-  txbuf = new uint8_t[min(payload+1,mirf_ADDR_LEN)] + 1;
-  rxbuf = new uint8_t[min(payload+1,mirf_ADDR_LEN)] + 1;
+  txbuf = new uint8_t[max(payload+1,mirf_ADDR_LEN)] + 1;
+  rxbuf = new uint8_t[max(payload+1,mirf_ADDR_LEN)] + 1;
 
   *(uint32_t*) addr = *(uint32_t*) address;
   requestAddress();
@@ -143,8 +144,8 @@ Radio::Radio(byte* address, unsigned int payload, bool listener) :
   if(listener)
     return;
   
-  talker_vec[talker_cnt] = *(uint32_t*) address;
-  rx[talker_cnt++] = this;
+  talker_addr_vec[talker_cnt] = *(uint32_t*) address;
+  talker_vec[talker_cnt++] = this;
   
   Mirf.configRegister(RX_PW_P0 + talker_cnt, payload);
   Mirf.configRegister(EN_RXADDR, bitSet(EN_RX_atual, talker_cnt));
@@ -168,7 +169,7 @@ void Radio::cmd()
   case PIPENUM_REQUEST:
 
     addr = *(uint32_t*)(cmd_buf+1);
-    for(i = 0; i < 5 && talker_vec[i] != addr; ++i);
+    for(i = 0; i < 5 && talker_addr_vec[i] != addr; ++i);
 
     cmd_buf[0] = PIPENUM_RESPONSE;
     cmd_buf[1] = (i < 5) ? i : NOT_MY_PIPE;
@@ -181,7 +182,7 @@ void Radio::cmd()
     Mirf.send(cmd_buf);
 
     if(i < 5)
-      last_sent = rx[i];
+      last_sent = talker_vec[i];
     else
       last_sent = NULL;
 
@@ -203,7 +204,7 @@ void Radio::cmd()
   case VALIDATION_REQUEST:
 
     addr = *(uint32_t*)(cmd_buf+1);
-    for(i = 0; i < listener_cnt && listener_vec[i] != addr; ++i);
+    for(i = 0; i < listener_cnt && listener_addr_vec[i] != addr; ++i);
 
     cmd_buf[0] = (i < listener_cnt) ? VALIDATION_RESPONSE_YES : VALIDATION_RESPONSE_NO;
 
@@ -657,7 +658,7 @@ uint8_t* operator << (const Server::Stream& lhs, uint8_t* req)
 Client::Client(uint8_t* addr, int payload) :
   Radio(addr,payload),
   qtde_srv(0),
-  services(new ReqResp[0])
+  services(new srv_t[0])
 {}
 
 Client::~Client()
@@ -671,9 +672,9 @@ void Client::disconnect()
   ok = false;
 }
 
-int Client::addService(ReqResp srv)
+int Client::addService(srv_t srv)
 {
-  ReqResp* new_srv_vec = new ReqResp[qtde_srv+1];
+  srv_t* new_srv_vec = new srv_t[qtde_srv+1];
 
   for(int i = 0; i < qtde_srv; ++i)
     new_srv_vec[i] = services[i];
