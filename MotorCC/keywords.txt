@@ -4,4 +4,4 @@ pinagem	KEYWORD2
 tipoParada	KEYWORD2
 soft	LITERAL1
 hard	LITERAL1
-
+HAMS	LITERAL1

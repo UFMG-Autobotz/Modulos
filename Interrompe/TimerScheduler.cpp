@@ -72,7 +72,7 @@ void setupTaskScheduler(int _maxTasks, unsigned long _tickIntervalMs)
 }
 
 /* 
- * OBS: alterei a função a seguir para retornar a posição alocada no vetor (i) ou em vez de 'true' e -1 em vez de 'false'
+ * OBS: alterei a função a seguir para retornar a posição alocada no vetor (i) em vez de 'true' e -1 em vez de 'false'
  */
 
 int scheduleTimer1Task(void (*action)(void*), void* argument, unsigned long delayMs)
@@ -149,7 +149,7 @@ void stopSchedulerTicking()
   TIMSK1 &= !(1 << OCIE1A);
 }
 
-void unscheduleTimer1Task(int task_id)
+void unscheduleTimer1Task(unsigned int task_id)
 {
   if(task_id >= maxTasks || tasks[task_id] == NULL)
     return;

@@ -1,4 +1,6 @@
 /*  MotorCC.h
+ *  Autor: Daniel Leite Ribeiro
+ *         Autobotz UFMG
  *
  *  Classe para facilitar o acionamento de motores CC em códigos .ino
  */
@@ -13,6 +15,7 @@ class MotorCC
 public:
 
   enum Parada {soft, hard};
+  enum {HAMS = -1};
 
   MotorCC();
   MotorCC(int enable, int H1, int H2);
@@ -24,8 +27,10 @@ public:
 
 private:
   
-  uint8_t enable, H1, H2, task_id;
+  uint8_t enable, H1, H2;
+  int task_id;
   Parada tipo_parada;
+  bool is_hams, ok;
 };
 
 #endif

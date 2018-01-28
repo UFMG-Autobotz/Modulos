@@ -26,6 +26,6 @@ void startSchedulerTicking();
 
 // Adicionei estas funções:
 void stopSchedulerTicking(); // Para poder parar as interrupções quando necessário
-void unscheduleTimer1Task(int task_id); // Para poder cancelar uma tarefa que foi agendada
+void unscheduleTimer1Task(unsigned int task_id); // Para poder cancelar uma tarefa que foi agendada
 
 #endif
