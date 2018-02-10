@@ -18,6 +18,7 @@
 // Com umas pequeninas alterações feitas pelo Daniel :)
 
 #include <Arduino.h>
+#include "TimerScheduler.h"
 
 const int prescaler = 1024; // How many clock cycles it takes before the underlying timer (Timer1) increments
 const int timerHertz = 16000000 / prescaler; // How many times per second the underlying timer (Timer1) increments. 16,000,000 is the Arduino's clock speed
@@ -146,7 +147,7 @@ ISR( TIMER1_COMPA_vect )
 
 void stopSchedulerTicking()
 {
-  TIMSK1 &= !(1 << OCIE1A);
+  bitClear(TIMSK1, OCIE1A);
 }
 
 void unscheduleTimer1Task(unsigned int task_id)

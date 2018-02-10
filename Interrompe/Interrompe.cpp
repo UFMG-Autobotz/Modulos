@@ -21,13 +21,6 @@ voidFuncPtr isr_personalizada_B[8], isr_personalizada_C[7], isr_personalizada_D[
 
 void *arg_B[8], *arg_C[7], *arg_D[8];
 
-struct TimerISR
-{
-  unsigned int ms;  // Momento (milissegundos) em que a função deverá ser chamada
-  voidFuncPtr isr;  // Callback
-  TimerISR* prox;
-} inicio;           // Inicializado com {0, NULL, NULL}
-
 bool habilita(const uint8_t pino, const byte tipo, voidFuncPtr isr_ptr, void* arg = NULL)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
@@ -104,7 +97,7 @@ bool modifica(const uint8_t pino, const uint8_t tipo)
     bitSet(borda_desc[bit_grupo], bit_mascara);
 }
 
-bool modifica(const uint8_t pino, voidFuncPtr isr_ptr)
+bool modifica(const uint8_t pino, voidFuncPtr isr_ptr, void* arg)
 {
   if(digitalPinToPCICR(pino) == NULL) // Pino inválido
     return false;
@@ -116,14 +109,17 @@ bool modifica(const uint8_t pino, voidFuncPtr isr_ptr)
   {
   case 0:
     isr_personalizada_B[bit_mascara] = isr_ptr;
+    arg_B[bit_mascara] = arg;
     break;
 
   case 1:
     isr_personalizada_C[bit_mascara] = isr_ptr;
+    arg_C[bit_mascara] = arg;
     break;
 
   case 2:
     isr_personalizada_D[bit_mascara] = isr_ptr;
+    arg_D[bit_mascara] = arg;
   }
 }
 
@@ -132,8 +128,9 @@ void permitirImediatas(bool permitir)
   limpar_flag = !permitir;
 }
 
-#define EXEC_ISR_(qual_bit,qual_isr,qual_grupo) if(validos & qual_bit) isr_personalizada_ ## qual_grupo[qual_isr](arg_ ## qual_grupo[qual_isr])
-#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,B)
+// Gambiarra para evitar repetições
+#define EXEC_ISR_(bit,isr,grupo) if(validos & bit) isr_personalizada_ ## grupo[isr](arg_ ## grupo[isr])
+#define exec_isr(bit,isr) EXEC_ISR_(bit,isr,B)
 
 ISR(PCINT0_vect)
 {
@@ -151,7 +148,7 @@ ISR(PCINT0_vect)
   PORTB_anterior = PORTB;
 }
 
-#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,C)
+#define exec_isr(bit,isr) EXEC_ISR_(bit,isr,C)
 
 ISR(PCINT1_vect)
 {
@@ -168,7 +165,7 @@ ISR(PCINT1_vect)
   PORTC_anterior = PORTC;
 }
 
-#define exec_isr(qual_bit,qual_isr) EXEC_ISR_(qual_bit,qual_isr,D)
+#define exec_isr(bit,isr) EXEC_ISR_(bit,isr,D)
 
 ISR(PCINT2_vect)
 {

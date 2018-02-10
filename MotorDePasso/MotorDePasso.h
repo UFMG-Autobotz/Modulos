@@ -19,16 +19,16 @@ public:
   
   void pinagem(int p1, int p2, int p3, int p4);
   
-  inline int passosPorRevolucao();
-  void passosPorRevolucao(int passos);
+  int passosPorRevolucao() { return ppr; }
+  void passosPorRevolucao(int passos) { ppr = max(0,passos); }
   
-  inline float velocidade();
-  void velocidade(float veolcidade);
+  float velocidade() { return vel; }
+  void velocidade(float veolcidade) { vel = max(0,vel); }
+    
+  int passoAtual() { return i % ppr; }
 
   void passos(int num);                 // Gira "num" passos para frente (se positivo) ou para trás (se negativo)
   void irPara(int passo, int dir = 0);  // Posiciona-se no passo indicado
-    
-  inline int passoAtual();
 
 private:
 

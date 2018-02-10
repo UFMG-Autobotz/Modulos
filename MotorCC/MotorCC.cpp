@@ -20,10 +20,10 @@ MotorCC::MotorCC(int enable, int H1, int H2) : MotorCC()
 void MotorCC::pinagem(int pino_enable, int pino_H1, int pino_H2)
 {
   if(pino_enable == HAMS)
-    is_hams = true
+    is_hams = true;
   else
   {
-    isHams = false;
+    is_hams = false;
     enable = pino_enable;
     pinMode(enable,OUTPUT);
   }
@@ -33,7 +33,7 @@ void MotorCC::pinagem(int pino_enable, int pino_H1, int pino_H2)
   pinMode(H1,OUTPUT);
   pinMode(H2,OUTPUT);
 
-  setupTaskScheduler(4, 150);
+  setupTaskScheduler(6, 10);
   startSchedulerTicking();
 
   ok = true;
@@ -44,7 +44,7 @@ void MotorCC::mover(int vel_pwm)
   if(!ok)
     return;
   
-  if(is_HAMS)
+  if(is_hams)
   {
     if(vel_pwm <= 0)
       digitalWrite(H1,HIGH);

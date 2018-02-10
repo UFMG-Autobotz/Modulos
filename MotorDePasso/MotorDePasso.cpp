@@ -31,7 +31,7 @@ void MotorDePasso::pinagem(int p1, int p2, int p3, int p4)
   pinMode(pinos[2],OUTPUT);
   pinMode(pinos[3],OUTPUT);
 
-  setupTaskScheduler(4, 2);
+  setupTaskScheduler(6, 10);
   startSchedulerTicking();
 
   ok = true;
@@ -92,31 +92,6 @@ void MotorDePasso::irPara(int passo, int dir)
       passos(diferenca + ppr);
     else
       passos(diferenca);
-}
-
-int MotorDePasso::passoAtual()
-{
-  return i % ppr;
-}
-
-void MotorDePasso::passosPorRevolucao(int PPR)
-{
-  ppr = max(0,PPR);
-}
-
-int MotorDePasso::passosPorRevolucao()
-{
-  return ppr;
-}
-
-void MotorDePasso::velocidade(float veloc)
-{
-  vel = max(0,veloc);
-}
-
-float MotorDePasso::velocidade()
-{
-  return vel;
 }
 
 void MotorDePasso::soltar()

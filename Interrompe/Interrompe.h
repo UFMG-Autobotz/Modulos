@@ -21,7 +21,7 @@ bool habilita(const uint8_t pino, const byte tipo, voidFuncPtr isr_ptr, void* ar
 bool desabilita(const uint8_t pino);
 
 bool modifica(const uint8_t pino, const uint8_t tipo);
-bool modifica(const uint8_t pino, voidFuncPtr isr_ptr);
+bool modifica(const uint8_t pino, voidFuncPtr isr_ptr, void* arg);
 
 void permitirImediatas(bool permitir);
 

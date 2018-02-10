@@ -10,5 +10,5 @@ TimerScheduler	KEYWORD1
 setupTaskScheduler	KEYWORD2
 scheduleTimer1Task	KEYWORD2
 startSchedulerTicking	KEYWORD2
-startSchedulerTicking	KEYWORD2
+stopSchedulerTicking	KEYWORD2
 unscheduleTimer1Task	KEYWORD2
